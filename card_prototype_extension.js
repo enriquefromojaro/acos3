@@ -38,11 +38,19 @@ function presentIC(){
 function openFile(file){
 	var apduCommand = new ByteString("80 A4 00 00 02", HEX);
 	var wholeCommand = apduCommand.concat(new ByteString(file, HEX));
-	return this.plainApdu(wholeCommand);
+	this.plainApdu(wholeCommand);
+
+	return {
+		status: this.gtStatus()
+	}
 }
 
 function readRecord(record, offset, length){
-	return this.sendApdu(0x80, 0xB2, record, offset, length);
+	var resp = this.sendApdu(0x80, 0xB2, record, offset, length);
+	return {
+		data: resp,
+		status: this.getStatus()
+	}
 }
 
 function getStatus(){
@@ -78,7 +86,10 @@ function getResponse(respCode){
 }
 
 function clearCard(){
-	return this.sendApdu(0x80, 0x30, 0x00, 0x00, 0x00);
+	this.sendApdu(0x80, 0x30, 0x00, 0x00, 0x00);
+	return {
+		status: this.getStatus()
+	}
 }
 
 function writeRecord(record, offset, len, bytes){
@@ -92,11 +103,17 @@ function writeRecord(record, offset, len, bytes){
 	var wholeCommand = wholeCommand.concat(offSetBS);
 	var wholeCommand = wholeCommand.concat(lenBS);
 	var wholeCommand = wholeCommand.concat(bytes);
-	return this.plainApdu(wholeCommand);
+	this.plainApdu(wholeCommand);
+	
+	return {status: this.getStatus()}
 }
 
 function readBinary(highOffset, lowOffset, len){
-	return this.sendApdu(0x80, 0xB0, highOffset, lowOffset, len);
+	var resp = this.sendApdu(0x80, 0xB0, highOffset, lowOffset, len);
+	return {
+		data: resp,
+		status : this.getStatus()
+	}
 }
 
 function writeBinary(highOffset, lowOffset, len, bytes){
@@ -105,12 +122,22 @@ function writeBinary(highOffset, lowOffset, len, bytes){
 	var l_offsetBS = new ByteString( Utils.numbers.fixedLengthIntString(lowOffset.toString(16), 2), HEX);
 	var lenBS = new ByteString( Utils.numbers.fixedLengthIntString(len.toString(16), 2), HEX);
 
-
 	var wholeCommand = apduCommand.concat(h_offsetBS);
 	var wholeCommand = wholeCommand.concat(l_offsetBS);
 	var wholeCommand = wholeCommand.concat(lenBS);
 	var wholeCommand = wholeCommand.concat(bytes);
-	return this.plainApdu(wholeCommand);
+	this.plainApdu(wholeCommand);
+
+	return {status: this.getStatus()};
+}
+
+function inquireAccount(keyNumber, reference){
+	var keyNumberBS = new ByteString( Utils.numbers.fixedLengthIntString(keyNumber.toString(16), 2), HEX);
+
+	var apduCommand = new ByteString("80 E4", HEX).concat(keyNumberBS).concat(new ByteSting('00 04', HEX)).concat(reference);
+
+	this.plainApdu(apduCommand);
+	return {status: this.getStatus()};
 }
 
 // ----------------------------  CONCRETE FILE METHODS
