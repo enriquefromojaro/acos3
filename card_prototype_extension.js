@@ -7,6 +7,9 @@ Card.prototype.getAuthenticateResponse = getAuthenticateResponse;
 Card.prototype.getInquireAccountResponse = getInquireAccountResponse;
 
 
+Card.prototype.inquireAccount = inquireAccount
+
+
 Card.prototype.openFile = openFile;
 Card.prototype.presentIC = presentIC;
 Card.prototype.startSession = startSession;
