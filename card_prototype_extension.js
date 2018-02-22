@@ -1,7 +1,12 @@
+load('utils.js');
+
 Card.prototype.openFile = openFile;
 Card.prototype.presentIC = presentIC;
 Card.prototype.startSession = startSession;
 Card.prototype.getResponse = getResponse;
+Card.prototype.clearCard = clearCard;
+Card.prototype.writeRecord = writeRecord;
+
 
 Card.prototype.readRecord = readRecord;
 Card.prototype.openMCUIDFile = openMCUIDFile;
@@ -38,6 +43,24 @@ function startSession(){
 
 function getResponse(){
 	return this.sendApdu(0x80, 0xC0, 0x00, 0x00, 0x08);
+}
+
+function clearCard(){
+	return this.sendApdu(0x80, 0x30, 0x00, 0x00, 0x00);
+}
+
+function writeRecord(record, offset, len, bytes){
+	var apduCommand = new ByteString("80 A4 00 00 02", HEX);
+	var recordBS = new ByteString( Utils.numbers.fixedLengthIntString(record.toString(16), 2), HEX);
+	var offSetBS = new ByteString( Utils.numbers.fixedLengthIntString(offset.toString(16), 2), HEX);
+	var lenBS = new ByteString( Utils.numbers.fixedLengthIntString(len.toString(16), 2), HEX);
+
+
+	var wholeCommand = apduCommand.concat(recordBS);
+	var wholeCommand = wholeCommand.concat(offSetBS);
+	var wholeCommand = wholeCommand.concat(lenBS);
+	var wholeCommand = wholeCommand.concat(bytes);
+	return this.plainApdu(wholeCommand);
 }
 
 // ----------------------------  CONCRETE FILE METHODS
