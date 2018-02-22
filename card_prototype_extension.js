@@ -1,9 +1,15 @@
 load('utils.js');
 
+Card.prototype.getStatus = getStatus
+
+Card.prototype.getResponse = getResponse;
+Card.prototype.getAuthenticateResponse = getAuthenticateResponse;
+Card.prototype.getInquireAccountResponse = getInquireAccountResponse;
+
+
 Card.prototype.openFile = openFile;
 Card.prototype.presentIC = presentIC;
 Card.prototype.startSession = startSession;
-Card.prototype.getResponse = getResponse;
 Card.prototype.clearCard = clearCard;
 Card.prototype.writeRecord = writeRecord;
 Card.prototype.readBinary = readBinary;
@@ -39,12 +45,36 @@ function readRecord(record, offset, length){
 	return this.sendApdu(0x80, 0xB2, record, offset, length);
 }
 
-function startSession(){
-	return this.sendApdu(0x80, 0x84, 0x00, 0x00, 0x08);
+function getStatus(){
+	return this.card.SW.toString(16);
 }
 
-function getResponse(){
-	return this.sendApdu(0x80, 0xC0, 0x00, 0x00, 0x08);
+function startSession(){
+	var resp = this.sendApdu(0x80, 0x84, 0x00, 0x00, 0x08);
+	return {
+		cardRandom: resp,
+		status: this.getStatus()
+	}
+}
+
+function getAuthenticateResponse(){
+	var resp = this.getResponse(0x08);
+	return {
+		data: resp,
+		status: this.getStatus()
+	}
+}
+
+function getInquireAccountResponse(){
+	var resp = this.getResponse(0x19);
+	return {
+		data: resp,
+		status: this.getStatus()
+	}
+}
+
+function getResponse(respCode){
+	return this.sendApdu(0x80, 0xC0, 0x00, 0x00, respCode);
 }
 
 function clearCard(){
