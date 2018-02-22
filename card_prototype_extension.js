@@ -1,5 +1,6 @@
 Card.prototype.openFile = openFile;
 Card.prototype.presentIC = presentIC;
+Card.prototype.startSession = startSession;
 
 Card.prototype.readRecord = readRecord;
 Card.prototype.openMCUIDFile = openMCUIDFile;
@@ -28,6 +29,10 @@ function openFile(file){
 
 function readRecord(record, offset, length){
 	return this.sendApdu(0x80, 0xB2, record, offset, length);
+}
+
+function startSession(){
+	return this.sendApdu(0x80, 0x84, 0x00, 0x00, 0x08);
 }
 
 // ----------------------------  CONCRETE FILE METHODS
