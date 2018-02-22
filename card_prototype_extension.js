@@ -6,6 +6,7 @@ Card.prototype.startSession = startSession;
 Card.prototype.getResponse = getResponse;
 Card.prototype.clearCard = clearCard;
 Card.prototype.writeRecord = writeRecord;
+Card.prototype.readBinary = readBinary;
 
 
 Card.prototype.readRecord = readRecord;
@@ -61,6 +62,10 @@ function writeRecord(record, offset, len, bytes){
 	var wholeCommand = wholeCommand.concat(lenBS);
 	var wholeCommand = wholeCommand.concat(bytes);
 	return this.plainApdu(wholeCommand);
+}
+
+function readBinary(highOffset, lowOffset, len){
+	return this.sendApdu(0x80, 0xB0, highOffset, lowOffset, len);
 }
 
 // ----------------------------  CONCRETE FILE METHODS
