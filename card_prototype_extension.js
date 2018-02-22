@@ -8,6 +8,9 @@ Card.prototype.getInquireAccountResponse = getInquireAccountResponse;
 
 
 Card.prototype.inquireAccount = inquireAccount
+Card.prototype.credit = credit
+Card.prototype.debit = debit
+Card.prototype.revokeDebit = revokeDebit
 
 
 Card.prototype.openFile = openFile;
@@ -76,14 +79,6 @@ function getAuthenticateResponse(){
 	}
 }
 
-function getInquireAccountResponse(){
-	var resp = this.getResponse(0x19);
-	return {
-		data: resp,
-		status: this.getStatus()
-	}
-}
-
 function getResponse(respCode){
 	return this.sendApdu(0x80, 0xC0, 0x00, 0x00, respCode);
 }
@@ -134,12 +129,51 @@ function writeBinary(highOffset, lowOffset, len, bytes){
 	return {status: this.getStatus()};
 }
 
+
+// ----------------------------------------------- ACCOUNT OPERATIONS
+
 function inquireAccount(keyNumber, reference){
 	var keyNumberBS = new ByteString( Utils.numbers.fixedLengthIntString(keyNumber.toString(16), 2), HEX);
 
 	var apduCommand = new ByteString("80 E4", HEX).concat(keyNumberBS).concat(new ByteSting('00 04', HEX)).concat(reference);
 
 	this.plainApdu(apduCommand);
+	return {status: this.getStatus()};
+}
+
+function getInquireAccountResponse(){
+	var resp = this.getResponse(0x19);
+	return {
+		data: resp,
+		status: this.getStatus()
+	}
+}
+
+function credit(amount, TTREF, MAC){
+	var ammountBS = new ByteString( Utils.numbers.fixedLengthIntString(amount.toString(16), 6), HEX);
+	var macBS = new ByteString(MAC, ASCII).left(4);
+	var ttrefBS = new ByteString( Utils.numbers.fixedLengthIntString(TTREF.toString(16), 6), HEX);
+
+	var command = new ByteString('80 E2 00 0B', HEX).concat(macBS).concat(amountBS).concat(ttrefBS);
+
+	return {status: this.getStatus()};
+}
+
+function debit(amount, TTREF, MAC){
+	var ammountBS = new ByteString( Utils.numbers.fixedLengthIntString(amount.toString(16), 6), HEX);
+	var macBS = new ByteString(MAC, ASCII).left(4);
+	var ttrefBS = new ByteString( Utils.numbers.fixedLengthIntString(TTREF.toString(16), 6), HEX);
+
+	var command = new ByteString('80 E6 00 0B', HEX).concat(macBS).concat(amountBS).concat(ttrefBS);
+
+	return {status: this.getStatus()};
+}
+
+function revokeDebit(MAC){
+	var macBS = new ByteString(MAC, ASCII).left(4);
+
+	var command = new ByteString('80 E8 00 04', HEX).concat(macBS);
+
 	return {status: this.getStatus()};
 }
 
