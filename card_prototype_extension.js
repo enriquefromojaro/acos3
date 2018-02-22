@@ -7,6 +7,7 @@ Card.prototype.getResponse = getResponse;
 Card.prototype.clearCard = clearCard;
 Card.prototype.writeRecord = writeRecord;
 Card.prototype.readBinary = readBinary;
+Card.prototype.writeBinary = writeBinary;
 
 
 Card.prototype.readRecord = readRecord;
@@ -66,6 +67,20 @@ function writeRecord(record, offset, len, bytes){
 
 function readBinary(highOffset, lowOffset, len){
 	return this.sendApdu(0x80, 0xB0, highOffset, lowOffset, len);
+}
+
+function writeBinary(highOffset, lowOffset, len, bytes){
+	var apduCommand = new ByteString("80 A4 00 00 02", HEX);
+	var h_offsetBS = new ByteString( Utils.numbers.fixedLengthIntString(highOffset.toString(16), 2), HEX);
+	var l_offsetBS = new ByteString( Utils.numbers.fixedLengthIntString(lowOffset.toString(16), 2), HEX);
+	var lenBS = new ByteString( Utils.numbers.fixedLengthIntString(len.toString(16), 2), HEX);
+
+
+	var wholeCommand = apduCommand.concat(h_offsetBS);
+	var wholeCommand = wholeCommand.concat(l_offsetBS);
+	var wholeCommand = wholeCommand.concat(lenBS);
+	var wholeCommand = wholeCommand.concat(bytes);
+	return this.plainApdu(wholeCommand);
 }
 
 // ----------------------------  CONCRETE FILE METHODS
