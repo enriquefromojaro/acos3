@@ -29,7 +29,7 @@ Card.prototype.openPersonalizationFile = openPersonalizationFile;
 Card.prototype.openSecurityFile = openSecurityFile;
 Card.prototype.openUserManagFile = openUserManagFile;
 Card.prototype.openAccountFile = openAccountFile;
-Card.prototype.openAccountSeverityFile = openAccountSeverityFile;
+Card.prototype.openAccountSecurityFile = openAccountSecurityFile;
 Card.prototype.openATRFile = openATRFile;
 
 
@@ -222,7 +222,7 @@ function openAccountFile(){
 	}
 }
 
-function openAccountSeverityFile(){
+function openAccountSecurityFile(){
 	var resp = this.openFile('FF06');
 	return {
 		data: resp,
