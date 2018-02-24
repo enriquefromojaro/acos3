@@ -5,7 +5,8 @@ ej2 = {
     main: function () {
 
 	var card = new Card();
-	var atr = card.reset(card.COLD_RESET);
+	var atr = card.reset(Card.RESET_COLD);
+
 
 	// We present the IC in order to get root access
 
@@ -26,17 +27,22 @@ ej2 = {
 		return null;
 	}
 
-	/************** NO DESCOMENTAR HASTA ESTAR SEGUROSE QUE ESTÁ BIEN
-	//Writing Ooption register byte
+	/************** if writen byte to byte it would be like this
+	//Writing Option register byte
 	card.writeRecord(0, 0, 1, new ByteString('25', HEX));
 
 	// Writing Security option register. I'm not sure if it should be 0x14 or 0x54
-	card.writeRecord(1, 0, 1, new ByteString('54', HEX));
+	card.writeRecord(0, 1, 1, new ByteString('54', HEX));
 
 	// Writing number_pf_files register
-	card.writeRecord(1, 0, 1, new ByteString('04', HEX));
+	card.writeRecord(0, 2, 1, new ByteString('04', HEX));
+	
+	print(card.readRecord(0, 0, 4));
 
-	*/
+	/**/
+	card.writeRecord(0, 0, 3, new ByteString('25 54 04', HEX));
+	
     }
+
 };
 
