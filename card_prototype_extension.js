@@ -38,7 +38,10 @@ Card.prototype.openATRFile = openATRFile;
 function presentIC(){
 	print("PRESENTACION del IC para iniciar: ACOSTEST= 41434F53 54455354");
 	resp = this.plainApdu(new ByteString("80 20 07 00 08 41 43 4F 53 54 45 53 54", HEX));
-	print("Código SW: " + card.SW.toString(16));
+	return {
+	    data: resp,
+	    status: this.getStatus()
+	};
 }
 
 function openFile(file){
@@ -188,25 +191,49 @@ function openManufacturerFile(){
 }
 
 function openPersonalizationFile(){
-	return this.openFile('FF02');
+	var resp = this.openFile('FF02');
+	return {
+		data: resp,
+		status: this.getStatus()
+	}
 }
 
 function openSecurityFile(){
-	return this.openFile('FF03');
+	var resp = this.openFile('FF03');
+	return {
+		data: resp,
+		status: this.getStatus()
+	}
 }
 
 function openUserManagFile(){
-	return this.openFile('FF04');
+	var resp = this.openFile('FF04');
+	return {
+		data: resp,
+		status: this.getStatus()
+	}
 }
 
 function openAccountFile(){
 	return this.openFile('FF05');
+	return {
+		data: resp,
+		status: this.getStatus()
+	}
 }
 
 function openAccountSeverityFile(){
-	return this.openFile('FF06');
+	var resp = this.openFile('FF06');
+	return {
+		data: resp,
+		status: this.getStatus()
+	}
 }
 
 function openATRFile(){
-	return this.openFile('FF07');
+	var resp = this.openFile('FF07');
+	return {
+		data: resp,
+		status: this.getStatus()
+	}
 }
