@@ -31,20 +31,45 @@ ej5 = {
 	    print('RECORD: ' + i)
 	    print(card.readRecord(i, 0, 7).data)
 	}
-//	
-//	// Binary file named 8DC1, 256B, No permissions required
-//	resp = card.writeRecord(0, 0, 7, new ByteString('01 00 00 00 8D C1 80', HEX));
-//	if (resp.status !== '9000'){
-//		print('[ERROR] Error on writing cofig of binary file ODC1')
-//		return null;
-//	}
-//	
-//	// Binary file named 8DC2, 1024B, No permissions required
-//	resp = card.writeRecord(1, 0, 7, new ByteString('04 00 00 00 8D C2 80', HEX));
-//	if (resp.status !== '9000'){
-//		print('[ERROR] Error on writing cofig of binary file ODC2')
-//		return null;
-//	}
+	
+	var initialMoney = 5500;  // cents
+	var transtyp = '00';
+	
+	var transtypAndMoneyBS = transtyp + Utils.numbers.fixedLengthIntString(initialMoney.toString(16), 6);
+	transtypAndMoneyBS = new ByteString(transtypAndMoneyBS, HEX);
+	
+	// Writing transtyp and money in records 0 and 2
+	resp = card.writeRecord(0, 0, 4, transtypAndMoneyBS);
+	if (resp.status !== '9000'){
+		print('[ERROR] Error on writing transtyp and balance in record 0')
+		return null;
+	}
+	
+	// Binary file named 8DC2, 1024B, No permissions required
+	resp = card.writeRecord(2, 0, 4, transtypAndMoneyBS);
+	if (resp.status !== '9000'){
+		print('[ERROR] Error on writing transtyp and balance in record 2')
+		return null;
+	}
+	
+	var atcBS = new ByteString('00 00', HEX);
+	
+	var checkSum = Utils.bytes.calcChecksum(transtypAndMoneyBS.concat(atcBS));
+	
+	// Writing atc, checksum and 0 in records 1 and 3
+	var recordValue = atcBS.concat(checkSum).concat(new ByteString('00', HEX))
+	resp = card.writeRecord(1, 0, 4, recordValue);
+	if (resp.status !== '9000'){
+		print('[ERROR] Error on writing atc, checksum and 0 in record 1')
+		return null;
+	}
+	
+	// Writing atc, checksum and 0 in records 1 and 3
+	resp = card.writeRecord(3, 0, 4, recordValue);
+	if (resp.status !== '9000'){
+		print('[ERROR] Error on writing atc, checksum and 0 in record 3')
+		return null;
+	}
 //	
 //	// Record file named 8DC3, 127 records * 16B, No permissions required
 //	resp = card.writeRecord(2, 0, 7, new ByteString('0F 7F 00 00 8D C3 00', HEX));
