@@ -1,2 +1,5 @@
 load('ej2.js')
-ej2.main();
+
+// Uncomment the exercise to execute
+
+//ej2.main();
