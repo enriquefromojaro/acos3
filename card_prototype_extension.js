@@ -50,7 +50,7 @@ function openFile(file){
 	this.plainApdu(wholeCommand);
 
 	return {
-		status: this.gtStatus()
+		status: this.getStatus()
 	}
 }
 
@@ -63,7 +63,7 @@ function readRecord(record, offset, length){
 }
 
 function getStatus(){
-	return this.card.SW.toString(16);
+	return this.SW.toString(16);
 }
 
 function startSession(){
@@ -94,7 +94,7 @@ function clearCard(){
 }
 
 function writeRecord(record, offset, len, bytes){
-	var apduCommand = new ByteString("80 A4 00 00 02", HEX);
+	var apduCommand = new ByteString("80 D2", HEX);
 	var recordBS = new ByteString( Utils.numbers.fixedLengthIntString(record.toString(16), 2), HEX);
 	var offSetBS = new ByteString( Utils.numbers.fixedLengthIntString(offset.toString(16), 2), HEX);
 	var lenBS = new ByteString( Utils.numbers.fixedLengthIntString(len.toString(16), 2), HEX);
