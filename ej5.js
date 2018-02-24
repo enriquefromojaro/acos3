@@ -25,13 +25,6 @@ ej5 = {
 		return null;
 	}
 	
-	
-	print('BEFORE: ')
-	for(var i=0; i<8; i++){
-	    print('RECORD: ' + i)
-	    print(card.readRecord(i, 0, 7).data)
-	}
-	
 	var initialMoney = 5500;  // cents
 	var transtyp = '00';
 	
@@ -70,25 +63,33 @@ ej5 = {
 		print('[ERROR] Error on writing atc, checksum and 0 in record 3')
 		return null;
 	}
-//	
-//	// Record file named 8DC3, 127 records * 16B, No permissions required
-//	resp = card.writeRecord(2, 0, 7, new ByteString('0F 7F 00 00 8D C3 00', HEX));
-//	if (resp.status !== '9000'){
-//		print('[ERROR] Error on writing cofig of record file ODC3')
-//		return null;
-//	}
-//	
-//	// Record file named 8DC4, 255 records * 64B, No permissions required
-//	resp = card.writeRecord(3, 0, 7, new ByteString('40 FF 00 00 8D C4 00', HEX));
-//	if (resp.status !== '9000'){
-//		print('[ERROR] Error on writing cofig of record file ODC4')
-//		return null;
-//	}
 	
-	print('AFTER: ')
-	for(var i=0; i<8; i++){
-	    print('RECORD: ' + i)
-	    print(card.readRecord(i, 0, 7).data)
+	var maxBal = 10000;
+	var maxBalAnZeroBS = new ByteString('00 00 00', HEX).add(maxBal).concat(new ByteString('00', HEX));
+	
+	// Writing max balance and 00 in record 5
+	resp = card.writeRecord(5, 0, 4, maxBalAnZeroBS);
+	if (resp.status !== '9000'){
+		print('[ERROR] Error on writing max balance and 00 in record 4')
+		return null;
+	}
+	
+	var creditTerminal = new ByteString('AA DD CC 01', HEX);
+	
+	// Writing credit terminal on record 6
+	resp = card.writeRecord(6, 0, 4, creditTerminal);
+	if (resp.status !== '9000'){
+		print('[ERROR] Error on writing credit terminal on record 6')
+		return null;
+	}
+	
+	var debitTerminal = new ByteString('EE CC 00 01', HEX);
+	
+	// Writing credit terminal on record 7
+	resp = card.writeRecord(7, 0, 4, debitTerminal);
+	if (resp.status !== '9000'){
+		print('[ERROR] Error on debit credit terminal on record 7')
+		return null;
 	}
 	
 	
