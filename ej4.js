@@ -25,12 +25,6 @@ ej4 = {
 		return null;
 	}
 	
-	print('BEFORE: ')
-	for(var i=0; i<4; i++){
-	    print('RECORD: ' + i)
-	    print(card.readRecord(i, 0, 7).data)
-	}
-	
 	// Binary file named 8DC1, 256B, No permissions required
 	resp = card.writeRecord(0, 0, 7, new ByteString('01 00 00 00 8D C1 80', HEX));
 	if (resp.status !== '9000'){
@@ -57,12 +51,6 @@ ej4 = {
 	if (resp.status !== '9000'){
 		print('[ERROR] Error on writing cofig of record file ODC4')
 		return null;
-	}
-	
-	print('\n\n\nAFTER: ');
-	for(var i=0; i<4; i++){
-	    print('RECORD: ' + i)
-	    print(card.readRecord(i, 0, 7).data)
 	}
 	
 	
