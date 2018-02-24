@@ -50,7 +50,7 @@ function openFile(file){
 	this.plainApdu(wholeCommand);
 
 	return {
-		status: this.gtStatus()
+		status: this.getStatus()
 	}
 }
 
@@ -63,7 +63,7 @@ function readRecord(record, offset, length){
 }
 
 function getStatus(){
-	return this.card.SW.toString(16);
+	return this.SW.toString(16);
 }
 
 function startSession(){
