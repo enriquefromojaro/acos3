@@ -92,9 +92,6 @@ ej5 = {
 		return null;
 	}
 	
-	
     }
 
 };
-
-ej5.main()
