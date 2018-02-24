@@ -1,7 +1,7 @@
 load('utils.js');
 load('card_prototype_extension.js');
 
-ej3 = {
+ej4 = {
     main: function () {
 
 	var card = new Card();
@@ -69,6 +69,3 @@ ej3 = {
     }
 
 };
-
-ej3.main();
-
