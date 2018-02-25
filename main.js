@@ -3,6 +3,7 @@ load('ej3.js');
 load('ej4.js');
 load('ej5.js');
 load('ej6.js');
+load('ej7.js');
 
 // Uncomment the exercise to execute
 
@@ -12,3 +13,4 @@ load('ej6.js');
 
 //ej5.main();
 //ej6.main();
+//ej7.main();
