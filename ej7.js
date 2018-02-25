@@ -60,7 +60,7 @@ ej7 = {
 	
 	// in apdu write command, length is defined by 1 Byte, so we cannot write more than 255 bytes
 	// in a time. In this case, is more than enough
-	var str = this.getFileText(fileName, 15);
+	var str = this.getFileText(fileName, 16);
 	print (str)
 	resp = card.writeRecord(0, 0, str.length, new ByteString(str, ASCII));
 	if (resp.status !== '9000') {
