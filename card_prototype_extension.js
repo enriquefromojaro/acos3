@@ -5,6 +5,7 @@ Card.prototype.getStatus = getStatus
 Card.prototype.getResponse = getResponse;
 Card.prototype.getAuthenticateResponse = getAuthenticateResponse;
 Card.prototype.getInquireAccountResponse = getInquireAccountResponse;
+Card.prototype.getSMResponse = getSMResponse;
 
 Card.prototype.inquireAccount = inquireAccount
 Card.prototype.credit = credit
@@ -33,15 +34,13 @@ Card.prototype.authenticate = authenticate;
 
 Card.prototype.getIsoInSMCommand = getIsoInSMCommand;
 Card.prototype.calcMAC = calcMAC;
+Card.prototype.revokeLastSMOper = revokeLastSMOper;
 
 // ---------------------------- SEVERAL PURPOSE METHODS
 
 function getIsoInSMCommand(apduCommand, data) {
-    print('Data (len ' + data.length + '): ' + data);
     var encryptedData = Utils.bytes.encryptCBC(data, this.sessionKey, this.seqNum);
     
-    print('encData (len ' + encryptedData.length + '): ' + encryptedData);
-
     var CLA_ = apduCommand.bytes(0, 1).xor(new ByteString('0C', HEX)); // it should be always 0x8C
     
     var INS = apduCommand.bytes(1, 1);
@@ -64,18 +63,29 @@ function getIsoInSMCommand(apduCommand, data) {
     // MAC
     //var MAC = calcMAC();
     
+    var macChain = CLA_.concat(INS).concat(P1).concat(P2).concat(tag_87).concat(L_87).concat(Pi).concat(encryptedData)
     var wholeCommand = CLA_.concat(INS).concat(P1).concat(P2).concat(P3_).concat(tag_87).concat(L_87).concat(Pi).concat(encryptedData)
-    var MAC = this.calcMAC(wholeCommand);
+    var MAC = this.calcMAC(macChain);
     wholeCommand = wholeCommand.concat(tag_8E).concat(L_8E).concat(MAC);
     
-    print ('Command: ' + wholeCommand);
-    return wholeCommand;
+    this.seqNum = this.seqNum.add(1);
+    this.lastSMOper = {
+	    CLA_ : CLA_,
+	    INS: INS,
+	    P1: P1,
+	    P2: P2
+    }
+    
+    return wholeCommand
+}
 
+function revokeLastSMOper(){
+    this.lastSMOper = null;
+    this.seqNum = this.seqNum.add(-1);
 }
 
 function calcMAC(command){
     var mac = new ByteString('89 04', HEX).concat(command);
-    print (mac);
     mac = Utils.bytes.encryptCBC(mac, this.sessionKey, this.seqNum);
     mac = mac.right(8).left(4);
     return mac;
@@ -182,6 +192,24 @@ function getAuthenticateResponse() {
     }
 }
 
+function getSMResponse(){
+    var resp = this.getResponse(0xC);
+    var status = this.getStatus();
+    var commandStatus = resp.bytes(2, 2).toString(HEX);
+    var macChain = this.lastSMOper.CLA_.concat(this.lastSMOper.INS).concat(this.lastSMOper.P1).concat(this.lastSMOper.P2).concat(resp.bytes(0, 4));
+    var MAC = this.calcMAC(macChain);
+    if (! MAC.equals(resp.right(4))){
+	print('[ERROR] MAC does not match!!!!');
+    }
+    this.seqNum = this.seqNum.add(1);
+    
+    return{
+	status: status,
+	commandStatus: commandStatus,
+    };
+    
+}
+
 function getResponse(respCode) {
     return this.sendApdu(0x80, 0xC0, 0x00, 0x00, respCode);
 }
@@ -193,7 +221,7 @@ function clearCard() {
     }
 }
 
-function writeRecord(record, offset, len, bytes) {
+function writeRecord(record, offset, len, bytes, useSM) {
     var apduCommand = new ByteString("80 D2", HEX);
     var recordBS = new ByteString(Utils.numbers.fixedLengthIntString(record
 	    .toString(16), 2), HEX);
@@ -203,10 +231,18 @@ function writeRecord(record, offset, len, bytes) {
 	    .toString(16), 2), HEX);
 
     var wholeCommand = apduCommand.concat(recordBS);
-    var wholeCommand = wholeCommand.concat(offSetBS);
-    var wholeCommand = wholeCommand.concat(lenBS);
-    var wholeCommand = wholeCommand.concat(bytes);
+    wholeCommand = wholeCommand.concat(offSetBS);
+    wholeCommand = wholeCommand.concat(lenBS);
+    
+    if(useSM)
+	wholeCommand = this.getIsoInSMCommand(wholeCommand, bytes);
+    else
+	wholeCommand = wholeCommand.concat(bytes);
     this.plainApdu(wholeCommand);
+    
+    if(useSM &&  this.getStatus() !== '9000' && this.getStatus() !== '6882'){
+	this.revokeLastSM();
+    }
 
     return {
 	status : this.getStatus()
