@@ -37,3 +37,25 @@ Utils.bytes.decryptECB = function (crypted, cypherKey) {
     var decrypted = crypto.decrypt(key, Crypto.DES_ECB, crypted);
     return decrypted;
 }
+
+Utils.bytes.encryptCBC = function (plain, cypherKey, iv) {
+    var crypto = new Crypto();
+    var key = new Key();
+    key.setComponent(Key.DES, cypherKey);
+    var plaincpy = plain.pad(Crypto.ISO9797_METHOD_2);
+
+    var cyphered = crypto.encrypt(key, Crypto.DES_CBC, plaincpy, iv);
+
+    return cyphered;
+}
+
+
+Utils.bytes.decryptCBC = function (crypted, cypherKey, iv) {
+
+    var crypto = new Crypto();
+    var key = new Key();
+    key.setComponent(Key.DES, cypherKey);
+
+    var decrypted = crypto.decrypt(key, Crypto.DES_CBC, crypted, iv);
+    return decrypted;
+}
