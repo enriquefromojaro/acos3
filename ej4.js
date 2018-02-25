@@ -40,7 +40,7 @@ ej4 = {
 	}
 	
 	// Record file named 8DC3, 127 records * 16B, No permissions required
-	resp = card.writeRecord(2, 0, 7, new ByteString('0F 7F 00 00 8D C3 00', HEX));
+	resp = card.writeRecord(2, 0, 7, new ByteString('10 7F 00 00 8D C3 00', HEX));
 	if (resp.status !== '9000'){
 		print('[ERROR] Error on writing cofig of record file ODC3')
 		return null;
