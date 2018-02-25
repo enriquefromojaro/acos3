@@ -29,9 +29,57 @@ Card.prototype.openAccountFile = openAccountFile;
 Card.prototype.openAccountSecurityFile = openAccountSecurityFile;
 Card.prototype.openATRFile = openATRFile;
 
-Card.prototype.authenticate = authenticate
+Card.prototype.authenticate = authenticate;
+
+Card.prototype.getIsoInSMCommand = getIsoInSMCommand;
+Card.prototype.calcMAC = calcMAC;
 
 // ---------------------------- SEVERAL PURPOSE METHODS
+
+function getIsoInSMCommand(apduCommand, data) {
+    print('Data (len ' + data.length + '): ' + data);
+    var encryptedData = Utils.bytes.encryptCBC(data, this.sessionKey, this.seqNum);
+    
+    print('encData (len ' + encryptedData.length + '): ' + encryptedData);
+
+    var CLA_ = apduCommand.bytes(0, 1).xor(new ByteString('0C', HEX)); // it should be always 0x8C
+    
+    var INS = apduCommand.bytes(1, 1);
+    var P1 = apduCommand.bytes(2, 1);
+    var P2 = apduCommand.bytes(3, 1);
+    // P3_ = length + padding => len (0x87, l_87, Pi, Encrypted_data, 0x8E,
+    // 0x04, MAC(4 bytes)) => len(enc_data) + 9
+    var P3_ = new ByteString('00', HEX).add(encryptedData.length + 9);
+    // tag 0x87
+    var tag_87 = new ByteString('87', HEX);
+    // len_tag_87 var L_87 = len(Pi + encryptedData) => len(encripted_data) + 1
+    var L_87 = new ByteString('00', HEX).add(encryptedData.length + 1);
+    // Pi => ecryptd data padding indicator => number of padded bytes
+    var Pi = new ByteString('00', HEX).add(encryptedData.length - data.length);
+    // encData
+    // tag 0x8E
+    var tag_8E = new ByteString('8E', HEX);
+    // length tag 0x8E = 4
+    var L_8E = new ByteString('00', HEX).add(4);
+    // MAC
+    //var MAC = calcMAC();
+    
+    var wholeCommand = CLA_.concat(INS).concat(P1).concat(P2).concat(P3_).concat(tag_87).concat(L_87).concat(Pi).concat(encryptedData)
+    var MAC = this.calcMAC(wholeCommand);
+    wholeCommand = wholeCommand.concat(tag_8E).concat(L_8E).concat(MAC);
+    
+    print ('Command: ' + wholeCommand);
+    return wholeCommand;
+
+}
+
+function calcMAC(command){
+    var mac = new ByteString('89 04', HEX).concat(command);
+    print (mac);
+    mac = Utils.bytes.encryptCBC(mac, this.sessionKey, this.seqNum);
+    mac = mac.right(8).left(4);
+    return mac;
+}
 
 TERMINAL_KEY = new ByteString(' AA 00 AA 01 AA 02 AA 03', HEX);
 CARD_KEY = new ByteString('DD 00 DD 01 DD 02 DD 03', HEX);
@@ -72,6 +120,7 @@ function authenticate() {
 	return false;
     }
     this.sessionKey = sessionKey;
+    this.seqNum = cardRandom.and(new ByteString('00 00 00 00 00 00 FF FF', HEX)).add(1);
     return true;
 
 }
