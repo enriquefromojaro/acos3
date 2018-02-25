@@ -118,7 +118,7 @@ function readBinary(highOffset, lowOffset, len){
 }
 
 function writeBinary(highOffset, lowOffset, len, bytes){
-	var apduCommand = new ByteString("80 A4 00 00 02", HEX);
+	var apduCommand = new ByteString("80 D0", HEX);
 	var h_offsetBS = new ByteString( Utils.numbers.fixedLengthIntString(highOffset.toString(16), 2), HEX);
 	var l_offsetBS = new ByteString( Utils.numbers.fixedLengthIntString(lowOffset.toString(16), 2), HEX);
 	var lenBS = new ByteString( Utils.numbers.fixedLengthIntString(len.toString(16), 2), HEX);
