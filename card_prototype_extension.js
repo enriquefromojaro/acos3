@@ -29,7 +29,61 @@ Card.prototype.openAccountFile = openAccountFile;
 Card.prototype.openAccountSecurityFile = openAccountSecurityFile;
 Card.prototype.openATRFile = openATRFile;
 
+Card.prototype.authenticate = authenticate
+
 // ---------------------------- SEVERAL PURPOSE METHODS
+
+TERMINAL_KEY = new ByteString(' AA 00 AA 01 AA 02 AA 03', HEX);
+CARD_KEY = new ByteString('DD 00 DD 01 DD 02 DD 03', HEX);
+
+function authenticate() {
+    var response = this.startSession();
+    if (response.status !== '9000') {
+	print('[ERROR] Error with start session: ' + response.status);
+	return false;
+    }
+
+    var cardRandom = response.cardRandom;
+    cryptedRandom = Utils.bytes.encryptECB(cardRandom, TERMINAL_KEY);
+    var terminalrandom = new Crypto().generateRandom(8);
+
+    var authenticateAPDU = new ByteString('80 82 00 00 10', HEX);
+
+    var wholeCommand = authenticateAPDU.concat(cryptedRandom).concat(
+	    terminalrandom);
+    this.plainApdu(wholeCommand);
+    var authStatus = this.getStatus();
+    if (authStatus !== '9000') {
+	print('[ERROR] error in authenticate command: ' + authStatus);
+	return false;
+    }
+
+    var sessionKey = Utils.bytes.encryptECB(cardRandom, CARD_KEY).xor(
+	    terminalrandom);
+    sessionKey = Utils.bytes.encryptECB(sessionKey, TERMINAL_KEY);
+    var authResp = this.getAuthenticateResponse();
+    if (authResp.status !== '9000') {
+	print('[ERROR] error in authenticate response: ' + authResp.status);
+	return false;
+    }
+    var returnResult = Utils.bytes.decryptECB(authResp.data, sessionKey);
+    if (!terminalrandom.equals(returnResult)) {
+	print('[ERROR] Athentication failed!!!!');
+	return false;
+    }
+    this.sessionKey = sessionKey;
+    return true;
+
+}
+
+function startSession() {
+    var resp = this.sendApdu(0x80, 0x84, 0, 0, 8);
+    return {
+	data : resp,
+	cardRandom : resp,
+	status : this.getStatus()
+    };
+}
 
 function presentIC() {
     print("PRESENTACION del IC para iniciar: ACOSTEST= 41434F53 54455354");
