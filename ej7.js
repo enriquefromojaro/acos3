@@ -55,11 +55,7 @@ ej7 = {
 	    print('[ERROR] Error on opening file 8DC3: ' + resp.status)
 	    return null;
 	}
-	
-	print('BEFORE: ' + card.readRecord(0, 0, 16).data.toString(ASCII));
-	
-	// in apdu write command, length is defined by 1 Byte, so we cannot write more than 255 bytes
-	// in a time. In this case, is more than enough
+		
 	var str = this.getFileText(fileName, 16);
 	print (str)
 	resp = card.writeRecord(0, 0, str.length, new ByteString(str, ASCII));
@@ -67,7 +63,24 @@ ej7 = {
 	    print('[ERROR] Error on writing file 8DC3: ' + resp.status)
 	    return null;
 	}
-	print('AFTER: ' + card.readBinary(0, 0, 16).data.toString(ASCII));
+	
+	
+	print('-----------------------------------------------------------------------')
+	// record file 8DC4 255 records * 64B
+	fileName = '8DC4'
+	var resp = card.openFile(fileName);
+	if (resp.status !== '9000' && ! resp.status.substring(0, 2) ==='91') {
+	    print('[ERROR] Error on opening file 8DC3: ' + resp.status)
+	    return null;
+	}
+		
+	var str = this.getFileText(fileName, 64);
+	print (str)
+	resp = card.writeRecord(0, 0, str.length, new ByteString(str, ASCII));
+	if (resp.status !== '9000') {
+	    print('[ERROR] Error on writing file 8DC4: ' + resp.status)
+	    return null;
+	}
 	
     },
 
@@ -85,5 +98,3 @@ ej7 = {
     }
 
 };
-
-ej7.main();
