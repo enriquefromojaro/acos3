@@ -284,7 +284,7 @@ function inquireAccount(keyNumber, reference) {
 	    keyNumber.toString(16), 2), HEX);
 
     var apduCommand = new ByteString("80 E4", HEX).concat(keyNumberBS).concat(
-	    new ByteSting('00 04', HEX)).concat(reference);
+	    new ByteString('00 04', HEX)).concat(reference);
 
     this.plainApdu(apduCommand);
     return {
@@ -294,10 +294,22 @@ function inquireAccount(keyNumber, reference) {
 
 function getInquireAccountResponse() {
     var resp = this.getResponse(0x19);
-    return {
+    var return_val =  {
 	data : resp,
 	status : this.getStatus()
     }
+    
+    var trans_types = ['DEBIT', 'REVOKE DEBIT', 'CREDIT'];
+    if(this.getStatus() === '9000'){
+	return_val.MAC = resp.left(4);
+	return_val.transType = trans_types[resp.bytes(4, 1).toUnsigned()];
+	return_val.balance = resp.bytes(5, 3).toUnsigned();
+	return_val.maxBalance = resp.bytes(8, 3).toUnsigned();
+	return_val.creditEntity = resp.bytes(11, 4);;
+	return_val.debitEntity = resp.right(4);
+    }
+    
+    return return_val;
 }
 
 function credit(amount, TTREF, MAC) {
