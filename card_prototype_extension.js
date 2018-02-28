@@ -304,8 +304,9 @@ function getInquireAccountResponse() {
 	return_val.MAC = resp.left(4);
 	return_val.transType = trans_types[resp.bytes(4, 1).toUnsigned()];
 	return_val.balance = resp.bytes(5, 3).toUnsigned();
-	return_val.maxBalance = resp.bytes(8, 3).toUnsigned();
-	return_val.creditEntity = resp.bytes(11, 4);;
+	return_val.atref = resp.bytes(8, 6);
+	return_val.maxBalance = resp.bytes(14, 3).toUnsigned();
+	return_val.creditEntity = resp.bytes(17, 4);;
 	return_val.debitEntity = resp.right(4);
     }
     

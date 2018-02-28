@@ -18,6 +18,7 @@ ej11 = {
 	    print('MAC:           ' + resp.MAC);
 	    print('Trans. Type:   ' + resp.transType);
 	    print('Balance:       ' + resp.balance);
+	    print('ATREF:         ' + resp.atref);
 	    print('Max. Balance:  ' + resp.maxBalance);
 	    print('Credit Entity: ' + resp.creditEntity);
 	    print('Debit Entity:  ' + resp.debitEntity);
@@ -27,3 +28,4 @@ ej11 = {
 };
 
 ej11.main();
+//readcard();
