@@ -66,13 +66,23 @@ ej5 = {
 	
 	var maxBal = 10000;
 	var maxBalAnZeroBS = new ByteString('00 00 00', HEX).add(maxBal).concat(new ByteString('00', HEX));
+	print(maxBalAnZeroBS);
 	
 	// Writing max balance and 00 in record 5
-	resp = card.writeRecord(5, 0, 4, maxBalAnZeroBS);
+	resp = card.writeRecord(4, 0, 4, maxBalAnZeroBS);
 	if (resp.status !== '9000'){
 		print('[ERROR] Error on writing max balance and 00 in record 4')
 		return null;
 	}
+	
+	//Writing AID
+	var AID = new ByteString('CC CC 00 01', HEX)
+	resp = card.writeRecord(5, 0, 4, AID);
+	if (resp.status !== '9000'){
+		print('[ERROR] Error on writing max balance and 00 in record 4')
+		return null;
+	}
+	
 	
 	var creditTerminal = new ByteString('AA DD CC 01', HEX);
 	
@@ -91,7 +101,9 @@ ej5 = {
 		print('[ERROR] Error on debit credit terminal on record 7')
 		return null;
 	}
+	card.close();
 	
     }
 
 };
+//ej5.main();
