@@ -42,7 +42,8 @@ Utils.bytes.encryptCBC = function (plain, cypherKey, iv) {
     var crypto = new Crypto();
     var key = new Key();
     key.setComponent(Key.DES, cypherKey);
-    var plaincpy = plain.pad(Crypto.ISO9797_METHOD_2);
+    
+    var plaincpy = plain.pad(Crypto.ISO9797_METHOD_2, true);
 
     var cyphered = crypto.encrypt(key, Crypto.DES_CBC, plaincpy, iv);
 
