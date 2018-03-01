@@ -27,5 +27,5 @@ ej11 = {
 
 };
 
-ej11.main();
+//ej11.main();
 //readcard();

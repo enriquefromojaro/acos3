@@ -99,6 +99,18 @@ function calcMAC(command, ommitTLV, key, seqNum){
 TERMINAL_KEY = new ByteString(' AA 00 AA 01 AA 02 AA 03', HEX);
 CARD_KEY = new ByteString('DD 00 DD 01 DD 02 DD 03', HEX);
 
+ACCOUNT_KEYS = [
+    new ByteString('80 81 82 83 84 85 86 87', HEX),
+    new ByteString('90 91 92 93 94 95 96 97', HEX),
+    new ByteString('A0 A1 A2 A3 A4 A5 A6 A7', HEX),
+    new ByteString('B0 B1 B2 B3 B4 B5 B6 B7', HEX)
+];
+
+DEBIT_KEY_NUM = 0;
+CREDIT_KEY_NUM = 1;
+CERTIFY_KEY_NUM = 2;
+REVOKE_DEBIT_NUM = 3;
+
 function authenticate() {
     var response = this.startSession();
     if (response.status !== '9000') {
@@ -318,13 +330,14 @@ function getInquireAccountResponse(reference, keyNumber) {
 	macChain = macChain.concat(new ByteString('00 00 00', HEX).add(return_val.balance));
 	macChain = macChain.concat(return_val.atref).concat(new ByteString('00 00', HEX));
 
-	//var k = new ByteString('00 00 00 00 00 00 00 00', HEX).add(
-	var cMac = this.calcMAC(macChain, new ByteString('A0 A1 A2 A3 A4 A5 A6 A7', HEX), new ByteString('00 00 00 00 00 00 00 00', HEX))
+	var cMac = this.calcMAC(macChain, true, ACCOUNT_KEYS[keyNumber], new ByteString('00 00 00 00 00 00 00 00', HEX))
 	print('cmac: ' + cMac);
-	if(return_val.MAC === cMac){
+	if(return_val.MAC.equals(cMac)){
             print('[SUCCESS] MAC verified!');
+	}
 	else{
 	    print('[ERROR] MAC does not match!!!');
+	}
     }
     
     return return_val;
