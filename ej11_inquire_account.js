@@ -7,11 +7,11 @@ ej11 = {
 	var card = new Card();
 	var atr = card.reset(Card.RESET_COLD);
 
-	print('AUTHENTICATED: ' + card.authenticate());
-	var resp = card.inquireAccount(0, new ByteString('00 00 00 00', HEX));
+	//print('AUTHENTICATED: ' + card.authenticate());
+	var resp = card.inquireAccount(2, new ByteString('00 00 00 00', HEX));
 	print(resp.status);
 	
-	resp = card.getInquireAccountResponse();
+	resp = card.getInquireAccountResponse(new ByteString('00 00 00 00', HEX), 2);
 	print (resp.data);
 	print(resp.status);
 	if (resp.status === '9000'){
