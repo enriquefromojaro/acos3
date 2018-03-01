@@ -84,9 +84,14 @@ function revokeLastSMOper(){
     this.seqNum = this.seqNum.add(-1);
 }
 
-function calcMAC(command){
-    var mac = new ByteString('89 04', HEX).concat(command);
-    mac = Utils.bytes.encryptCBC(mac, this.sessionKey, this.seqNum);
+function calcMAC(command, ommitTLV, key, seqNum){
+    var seq = seqNum || this.seqNum;
+    var k = key || this.sessionKey;
+    var mac = new ByteString('', HEX);
+    if(! ommitTLV)
+	mac = mac.concat(new ByteString('89 04', HEX));
+    mac = mac.concat(command);
+    mac = Utils.bytes.encryptCBC(mac, k, seq);
     mac = mac.right(8).left(4);
     return mac;
 }
@@ -292,7 +297,7 @@ function inquireAccount(keyNumber, reference) {
     };
 }
 
-function getInquireAccountResponse() {
+function getInquireAccountResponse(reference, keyNumber) {
     var resp = this.getResponse(0x19);
     var return_val =  {
 	data : resp,
@@ -308,6 +313,18 @@ function getInquireAccountResponse() {
 	return_val.maxBalance = resp.bytes(14, 3).toUnsigned();
 	return_val.creditEntity = resp.bytes(17, 4);;
 	return_val.debitEntity = resp.right(4);
+	
+	var macChain =  reference.concat(resp.bytes(4, 1));
+	macChain = macChain.concat(new ByteString('00 00 00', HEX).add(return_val.balance));
+	macChain = macChain.concat(return_val.atref).concat(new ByteString('00 00', HEX));
+
+	//var k = new ByteString('00 00 00 00 00 00 00 00', HEX).add(
+	var cMac = this.calcMAC(macChain, new ByteString('A0 A1 A2 A3 A4 A5 A6 A7', HEX), new ByteString('00 00 00 00 00 00 00 00', HEX))
+	print('cmac: ' + cMac);
+	if(return_val.MAC === cMac){
+            print('[SUCCESS] MAC verified!');
+	else{
+	    print('[ERROR] MAC does not match!!!');
     }
     
     return return_val;
