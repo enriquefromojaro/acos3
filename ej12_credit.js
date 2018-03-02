@@ -26,7 +26,7 @@ ej12 = {
 	else
 	    return null
 	
-	resp = card.credit(25 *100,resp.creditEntity, resp);
+	resp = card.credit(25 *100, resp);
 	if (resp.status !== '9000'){
 	    print('[ERROR] Error on credit operation: ' + resp.status);
 	    return null;
