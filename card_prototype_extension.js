@@ -374,7 +374,8 @@ function getInquireAccountResponse(reference, keyNumber, useSM) {
     return return_val;
 }
 
-function credit(ammount, inquireAccountResp) {
+function credit(ammount, inquireAccountResp, useSM) {
+    useSM = 'undefined' == typeof useSM? false: useSM;
     var reference = inquireAccountResp.creditEntity;
     inquireAccountResp.atref = inquireAccountResp.atref.add(1);
     var ammountBS = new ByteString('00 00 00', HEX).add(ammount);
@@ -384,8 +385,14 @@ function credit(ammount, inquireAccountResp) {
     macChain = macChain.concat(inquireAccountResp.creditEntity)
     macChain = macChain.concat(inquireAccountResp.atref).concat(new ByteString('00 00', HEX));
     var MAC = this.calcMAC(macChain,true,  ACCOUNT_KEYS[CREDIT_KEY_NUM], new ByteString('00 00 00 00 00 00 00 00', HEX)) 
-
-    var command = new ByteString('80 E2 00 00 0B', HEX).concat(MAC).concat(ammountBS).concat(reference);
+    var data = MAC.concat(ammountBS).concat(reference);
+    var command = new ByteString('80 E2 00 00 0B', HEX)
+    if(useSM){
+	command = this.getIsoInSMCommand(command, data)
+    }else{
+	command = command.concat(data);
+    }
+    
     this.plainApdu(command);
     return {
 	status : this.getStatus()
