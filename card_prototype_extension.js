@@ -109,7 +109,7 @@ ACCOUNT_KEYS = [
 DEBIT_KEY_NUM = 0;
 CREDIT_KEY_NUM = 1;
 CERTIFY_KEY_NUM = 2;
-REVOKE_DEBIT_NUM = 3;
+REVOKE_DEBIT_KEY_NUM = 3;
 
 function authenticate() {
     var response = this.startSession();
@@ -380,11 +380,21 @@ function debit(ammount, inquireAccountResp) {
     };
 }
 
-function revokeDebit(MAC) {
-    var macBS = new ByteString(MAC, ASCII).left(4);
+function revokeDebit(ammount, inquireAccountResp) {
+    var newBalance = inquireAccountResp.balance + ammount;
+    newBalance = new ByteString('00 00 00', HEX).add(newBalance);
+    var reference = inquireAccountResp.debitEntity;
+    inquireAccountResp.atref = inquireAccountResp.atref.add(1);
+    var ammountBS = new ByteString('00 00 00', HEX).add(ammount);
+    
+    var macChain =  new ByteString('E8', HEX);
+    macChain = macChain.concat(newBalance);
+    macChain = macChain.concat(inquireAccountResp.debitEntity)
+    macChain = macChain.concat(inquireAccountResp.atref).concat(new ByteString('00 00', HEX));
+    var MAC = this.calcMAC(macChain,true,  ACCOUNT_KEYS[REVOKE_DEBIT_KEY_NUM], new ByteString('00 00 00 00 00 00 00 00', HEX))
 
-    var command = new ByteString('80 E8 00 04', HEX).concat(macBS);
-
+    var command = new ByteString('80 E8 00 00 04', HEX).concat(MAC);
+    this.plainApdu(command);
     return {
 	status : this.getStatus()
     };
