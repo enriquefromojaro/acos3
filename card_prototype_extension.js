@@ -296,24 +296,55 @@ function writeBinary(highOffset, lowOffset, len, bytes) {
 
 // ----------------------------------------------- ACCOUNT OPERATIONS
 
-function inquireAccount(keyNumber, reference) {
+function inquireAccount(keyNumber, reference, useSM) {
+    
+    useSM = useSM || false;
     var keyNumberBS = new ByteString(Utils.numbers.fixedLengthIntString(
 	    keyNumber.toString(16), 2), HEX);
 
-    var apduCommand = new ByteString("80 E4", HEX).concat(keyNumberBS).concat(
-	    new ByteString('00 04', HEX)).concat(reference);
-
+    var apduCommand = new ByteString("80 E4", HEX).concat(keyNumberBS).concat(new ByteString('00 04', HEX));
+    if (useSM){
+	apduCommand = this.getIsoInSMCommand(apduCommand, reference)
+    }else{
+	apduCommand = apduCommand.concat(reference);
+    }
     this.plainApdu(apduCommand);
+    if(useSM &&  this.getStatus() !== '9000' && this.getStatus() !== '6882'){
+	this.revokeLastSM();
+    }
     return {
 	status : this.getStatus()
     };
 }
 
-function getInquireAccountResponse(reference, keyNumber) {
-    var resp = this.getResponse(0x19);
+function getInquireAccountResponse(reference, keyNumber, useSM) {
+    useSM = 'undefined' == typeof useSM? false: useSM;
+    var responseP3 = useSM ? 15 + 23: 0x19;
+    var resp = this.getResponse(responseP3);
     var return_val =  {
 	data : resp,
 	status : this.getStatus()
+    }
+    if (useSM){
+	var len_enc = resp.byteAt(1) -1;
+	var len_padding = resp.byteAt(2);
+	var enc_data = resp.bytes(3, len_enc);
+	var status = resp.bytes(len_enc + 5, 2).toString(16);
+	var resp_mac = resp.right(4);
+	var data = Utils.bytes.decryptCBC(enc_data, this.sessionKey, this.seqNum).left(len_enc - len_padding);
+	var macChain = this.lastSMOper.CLA_.concat(this.lastSMOper.INS).concat(this.lastSMOper.P1).concat(this.lastSMOper.P2);
+	macChain = macChain.concat(resp.left(len_enc + 7));
+	var cMac = this.calcMAC(macChain);
+	if (cMac.equals(resp_mac)){
+	    print('[SUCCESS] MAC verified!!');
+	}
+	else{
+	    print('[ERROR] MAC does not match!! ' + resp_mac + ' != ' + cMac);
+	}
+	
+	resp = data;
+	return_val.data = data;
+	return_val.status = status;
     }
     
     var trans_types = ['NONE', 'DEBIT', 'REVOKE DEBIT', 'CREDIT'];
