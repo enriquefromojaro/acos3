@@ -316,7 +316,7 @@ function getInquireAccountResponse(reference, keyNumber) {
 	status : this.getStatus()
     }
     
-    var trans_types = ['DEBIT', 'REVOKE DEBIT', 'CREDIT'];
+    var trans_types = ['DEBIT', 'REVOKE DEBIT', 'INQUIRE ACCOUNT', 'CREDIT'];
     if(this.getStatus() === '9000'){
 	return_val.MAC = resp.left(4);
 	return_val.transType = trans_types[resp.bytes(4, 1).toUnsigned()];
