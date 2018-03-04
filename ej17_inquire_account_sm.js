@@ -47,5 +47,5 @@ ej17 = {
 
 };
 
-ej17.main();
+//ej17.main();
 //readcard();
