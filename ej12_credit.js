@@ -33,6 +33,9 @@ ej12 = {
 	}
 	print('-----------------------------');
 	
+	var resp = card.inquireAccount(2, new ByteString('00 00 00 00', HEX));
+	print(resp.status);
+	
 	resp = card.getInquireAccountResponse(new ByteString('00 00 00 00', HEX), 2);
 	print (resp.data);
 	print(resp.status);
@@ -45,6 +48,8 @@ ej12 = {
 	    print('Credit Entity: ' + resp.creditEntity);
 	    print('Debit Entity:  ' + resp.debitEntity);
 	}
+	else
+	    return null
     }
 
 };
