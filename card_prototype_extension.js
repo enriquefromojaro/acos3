@@ -392,9 +392,7 @@ function credit(ammount, inquireAccountResp, useSM) {
     }else{
 	command = command.concat(data);
     }
-    
-    this.plainApdu(command);
-    
+        
     if(useSM &&  this.getStatus() !== '9000' && this.getStatus() !== '6882'){
 	this.revokeLastSMOper();
     }
@@ -403,8 +401,8 @@ function credit(ammount, inquireAccountResp, useSM) {
     };
 }
 
-function debit(ammount, inquireAccountResp) {
-    
+function debit(ammount, inquireAccountResp, useSM) {
+    useSM = 'undefined' == typeof useSM? false: useSM;
     var reference = inquireAccountResp.debitEntity;
     inquireAccountResp.atref = inquireAccountResp.atref.add(1);
     var ammountBS = new ByteString('00 00 00', HEX).add(ammount);
@@ -415,8 +413,14 @@ function debit(ammount, inquireAccountResp) {
     macChain = macChain.concat(inquireAccountResp.atref).concat(new ByteString('00 00', HEX));
     var MAC = this.calcMAC(macChain,true,  ACCOUNT_KEYS[DEBIT_KEY_NUM], new ByteString('00 00 00 00 00 00 00 00', HEX)) 
 
-    var command = new ByteString('80 E6 00 00 0B', HEX).concat(MAC).concat(ammountBS).concat(reference);
-    this.plainApdu(command);
+    var command = new ByteString('80 E6 00 00 0B', HEX)
+    var data = MAC.concat(ammountBS).concat(reference);
+    if(useSM){
+	command = this.getIsoInSMCommand(command, data)
+    }else{
+	command = command.concat(data);
+    }
+    print(this.plainApdu(command));
     return {
 	status : this.getStatus()
     };
