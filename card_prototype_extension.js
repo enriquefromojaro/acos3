@@ -425,7 +425,7 @@ function openAccountFile() {
     return {
 	data : resp,
 	status : this.getStatus()
-    }
+    };
 }
 
 function openAccountSecurityFile() {
