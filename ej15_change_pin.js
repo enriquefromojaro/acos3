@@ -34,5 +34,5 @@ ej15 = {
 
 };
 
-ej15.main();
+//ej15.main();
 //readcard();
