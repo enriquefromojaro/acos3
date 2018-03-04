@@ -426,7 +426,8 @@ function debit(ammount, inquireAccountResp, useSM) {
     };
 }
 
-function revokeDebit(ammount, inquireAccountResp) {
+function revokeDebit(ammount, inquireAccountResp, useSM) {
+    useSM = 'undefined' == typeof useSM? false: useSM;
     var newBalance = inquireAccountResp.balance + ammount;
     newBalance = new ByteString('00 00 00', HEX).add(newBalance);
     var reference = inquireAccountResp.debitEntity;
@@ -439,7 +440,12 @@ function revokeDebit(ammount, inquireAccountResp) {
     macChain = macChain.concat(inquireAccountResp.atref).concat(new ByteString('00 00', HEX));
     var MAC = this.calcMAC(macChain,true,  ACCOUNT_KEYS[REVOKE_DEBIT_KEY_NUM], new ByteString('00 00 00 00 00 00 00 00', HEX))
 
-    var command = new ByteString('80 E8 00 00 04', HEX).concat(MAC);
+    var command = new ByteString('80 E8 00 00 04', HEX);
+    if(useSM){
+	command = this.getIsoInSMCommand(command, MAC)
+    }else{
+	command = command.concat(MAC);
+    }
     this.plainApdu(command);
     return {
 	status : this.getStatus()
