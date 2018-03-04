@@ -394,6 +394,10 @@ function credit(ammount, inquireAccountResp, useSM) {
     }
     
     this.plainApdu(command);
+    
+    if(useSM &&  this.getStatus() !== '9000' && this.getStatus() !== '6882'){
+	this.revokeLastSMOper();
+    }
     return {
 	status : this.getStatus()
     };
