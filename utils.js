@@ -20,9 +20,10 @@ Utils.bytes.calcChecksum = function(bytes) {
 Utils.bytes.encryptECB = function (plain, cypherKey) {
     var crypto = new Crypto();
     var key = new Key();
+    var plaincpy = plain.pad(Crypto.ISO9797_METHOD_2, true);
     key.setComponent(Key.DES, cypherKey);
 
-    var cyphered = crypto.encrypt(key, Crypto.DES_ECB, plain);
+    var cyphered = crypto.encrypt(key, Crypto.DES_ECB, plaincpy);
 
     return cyphered;
 }
