@@ -54,5 +54,5 @@ ej12 = {
 
 };
 
-ej12.main();
+//ej12.main();
 //readcard();
