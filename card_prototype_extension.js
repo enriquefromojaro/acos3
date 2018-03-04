@@ -344,7 +344,7 @@ function getInquireAccountResponse(reference, keyNumber) {
 }
 
 function credit(ammount, inquireAccountResp) {
-    var reverence = resp.creditEntity;
+    var reference = inquireAccountResp.creditEntity;
     inquireAccountResp.atref = inquireAccountResp.atref.add(1);
     var ammountBS = new ByteString('00 00 00', HEX).add(ammount);
     
