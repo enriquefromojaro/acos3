@@ -87,14 +87,11 @@ function revokeLastSMOper(){
 function calcMAC(command, ommitTLV, key, seqNum){
     var seq = seqNum || this.seqNum;
     var k = key || this.sessionKey;
-    print('--'+ k);
-    print('--'+seq)
     var mac = new ByteString('', HEX);
     if(! ommitTLV)
 	mac = mac.concat(new ByteString('89 04', HEX));
     mac = mac.concat(command);
     mac = Utils.bytes.encryptCBC(mac, k, seq);
-    print('--'+mac);
     mac = mac.right(8).left(4);
     return mac;
 }
@@ -334,7 +331,7 @@ function getInquireAccountResponse(reference, keyNumber) {
 	macChain = macChain.concat(return_val.atref).concat(new ByteString('00 00', HEX));
 
 	var cMac = this.calcMAC(macChain, true, ACCOUNT_KEYS[keyNumber], new ByteString('00 00 00 00 00 00 00 00', HEX))
-	print('cmac: ' + cMac);
+	//print('cmac: ' + cMac);
 	if(return_val.MAC.equals(cMac)){
             print('[SUCCESS] MAC verified!');
 	}
@@ -355,11 +352,9 @@ function credit(ammount, inquireAccountResp) {
     macChain = macChain.concat(ammountBS);
     macChain = macChain.concat(inquireAccountResp.creditEntity)
     macChain = macChain.concat(inquireAccountResp.atref).concat(new ByteString('00 00', HEX));
-    print(macChain)
     var MAC = this.calcMAC(macChain,true,  ACCOUNT_KEYS[CREDIT_KEY_NUM], new ByteString('00 00 00 00 00 00 00 00', HEX)) 
 
     var command = new ByteString('80 E2 00 00 0B', HEX).concat(MAC).concat(ammountBS).concat(reference);
-    print('Command: ' + command);
     this.plainApdu(command);
     return {
 	status : this.getStatus()
