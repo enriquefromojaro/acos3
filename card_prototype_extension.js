@@ -361,16 +361,20 @@ function credit(ammount, inquireAccountResp) {
     };
 }
 
-function debit(amount, TTREF, MAC) {
-    var ammountBS = new ByteString(Utils.numbers.fixedLengthIntString(amount
-	    .toString(16), 6), HEX);
-    var macBS = new ByteString(MAC, ASCII).left(4);
-    var ttrefBS = new ByteString(Utils.numbers.fixedLengthIntString(TTREF
-	    .toString(16), 6), HEX);
+function debit(ammount, inquireAccountResp) {
+    
+    var reference = inquireAccountResp.debitEntity;
+    inquireAccountResp.atref = inquireAccountResp.atref.add(1);
+    var ammountBS = new ByteString('00 00 00', HEX).add(ammount);
+    
+    var macChain =  new ByteString('E2', HEX);
+    macChain = macChain.concat(ammountBS);
+    macChain = macChain.concat(inquireAccountResp.debitEntity)
+    macChain = macChain.concat(inquireAccountResp.atref).concat(new ByteString('00 00', HEX));
+    var MAC = this.calcMAC(macChain,true,  ACCOUNT_KEYS[DEBIT_KEY_NUM], new ByteString('00 00 00 00 00 00 00 00', HEX)) 
 
-    var command = new ByteString('80 E6 00 0B', HEX).concat(macBS).concat(
-	    amountBS).concat(ttrefBS);
-
+    var command = new ByteString('80 E6 00 00 0B', HEX).concat(MAC).concat(ammountBS).concat(reference);
+    this.plainApdu(command);
     return {
 	status : this.getStatus()
     };
