@@ -258,7 +258,7 @@ function writeRecord(record, offset, len, bytes, useSM) {
     this.plainApdu(wholeCommand);
     
     if(useSM &&  this.getStatus() !== '9000' && this.getStatus() !== '6882'){
-	this.revokeLastSM();
+	this.revokeLastSMOper();
     }
 
     return {
@@ -310,7 +310,7 @@ function inquireAccount(keyNumber, reference, useSM) {
     }
     this.plainApdu(apduCommand);
     if(useSM &&  this.getStatus() !== '9000' && this.getStatus() !== '6882'){
-	this.revokeLastSM();
+	this.revokeLastSMOper();
     }
     return {
 	status : this.getStatus()
