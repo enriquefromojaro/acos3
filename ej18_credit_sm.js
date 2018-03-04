@@ -57,5 +57,5 @@ ej18 = {
 
 };
 
-ej18.main();
+//ej18.main();
 //readcard();
