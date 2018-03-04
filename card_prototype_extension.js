@@ -400,6 +400,37 @@ function revokeDebit(ammount, inquireAccountResp) {
     };
 }
 
+//----------------------------- PIN operations
+
+Card.prototype.changePIN = function(newPIN){
+    var baseCommand = new ByteString('80 24 00 00 08', HEX);
+    var cryptedPIN = Utils.bytes.decryptECB(newPIN, this.sessionKey)
+    var command = baseCommand.concat(cryptedPIN);
+    
+    var resp = this.plainApdu(command);
+    return {
+	status: this.getStatus()
+    };
+}
+
+Card.prototype.submitCode = function(codeNum, code, useEncryption){
+    var command = new ByteString('80 20', HEX);
+    command = command.concat(new ByteString('00', HEX).add(codeNum)).concat(new ByteString('00 08', HEX));
+    var encrypt = 'undefined' === typeof useEncryption? true: useEncryption;
+    if (encrypt){
+	code = Utils.bytes.encryptECB(code, this.sessionKey);
+    }
+    command = command.concat(code);
+    this.plainApdu(command);
+    return {
+	status: this.getStatus()
+    };
+}
+
+Card.prototype.submitPIN = function(PIN){
+    return this.submitCode(6, PIN);
+}
+
 // ---------------------------- CONCRETE FILE METHODS
 
 function openMCUIDFile() {
